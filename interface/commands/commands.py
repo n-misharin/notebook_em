@@ -16,6 +16,7 @@ def close_app(settings: Settings) -> None:
     :return:
     """
     settings.running = False
+    settings.database.delete_copy()
     print("Goodbye!")
 
 

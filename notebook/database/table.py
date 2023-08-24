@@ -1,3 +1,4 @@
+import os
 from typing import Iterator, Callable
 
 from notebook.database.base import Table
@@ -45,12 +46,13 @@ class UserTable(Table):
         self._create_copy()
         return insert_data
 
-    def get_row(self, row_number: int) -> User:
+    def get_row(self, user_id: int) -> User:
         with open(self._filename, mode="r", encoding=self.encoding) as file:
             for i, line in enumerate(file):
-                if i == row_number:
-                    return self._to_object(line)
-        raise IndexError(f"Line number out of range: expected < {i + 1}, but found {row_number}")
+                user = self._to_object(line)
+                if user.id == user_id:
+                    return user
+        raise IndexError(f"Line number out of range: expected < {i + 1}, but found {user_id}")
 
     def find(self, find_data: dict, comp: Callable[[dict, User], bool]) -> Iterator[User]:
         with open(self._filename, mode="r", encoding=self.encoding) as file:
@@ -91,8 +93,8 @@ class UserTable(Table):
                 copy_file.write(line)
                 self._last = self._to_object(line).id
 
-    def _delete_copy(self) -> None:
-        pass
+    def delete_copy(self) -> None:
+        os.remove(self._copy_filename())
 
     @staticmethod
     def _to_line(data: User) -> str:
